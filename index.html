@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#ffd9e2">
+<title>La Granja de Fresitas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --rosa:#ffd9e2; --rosa2:#ffb7c9; --rosa3:#ff8fab;
+  --fresa:#e63950; --carmesi:#b3122f; --vino:#6d0f2a;
+  --crema:#fff6f1; --pasto:#c6e8b4; --pasto2:#a7d99b; --verde:#6fbf73;
+  --texto:#5a1730; --suave:#9b5870;
+  --sombra:0 5px 0 rgba(109,15,42,.20);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;background:linear-gradient(160deg,#ffe6ee,#ffc9d8);
+  font-family:'Quicksand','Baloo 2','Trebuchet MS',system-ui,sans-serif;color:var(--texto);
+  -webkit-user-select:none;user-select:none;touch-action:manipulation}
+button{font-family:inherit;color:inherit}
+#app{position:relative;max-width:640px;height:100%;margin:0 auto;display:flex;flex-direction:column;
+  background:var(--crema);box-shadow:0 0 50px rgba(109,15,42,.25);overflow:hidden}
+.screen{display:none;flex:1;min-height:0;flex-direction:column}
+.screen.active{display:flex}
+h1,h2,h3{font-family:'Baloo 2','Quicksand',sans-serif;margin:0}
+
+/* ---------- botones ---------- */
+.btn{border:none;cursor:pointer;background:var(--fresa);color:#fff;font-weight:700;font-size:1.05rem;
+  padding:13px 22px;border-radius:999px;box-shadow:var(--sombra);transition:transform .08s,box-shadow .08s,filter .2s}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(109,15,42,.2)}
+.btn.big{font-size:1.2rem;padding:16px 30px}
+.btn.wine{background:var(--vino)}
+.btn.pink{background:var(--rosa3)}
+.btn.soft{background:#fff;color:var(--carmesi);border:3px solid var(--rosa2)}
+.btn.green{background:var(--verde)}
+.btn[disabled]{filter:grayscale(.7) opacity(.55);cursor:not-allowed}
+.round{width:46px;height:46px;border-radius:50%;border:none;background:#fff;box-shadow:var(--sombra);
+  display:grid;place-items:center;cursor:pointer;padding:0}
+.round:active{transform:translateY(3px)}
+.round.off{opacity:.55;filter:grayscale(.6)}
+
+/* ---------- bienvenida ---------- */
+#welcome{position:relative;background:linear-gradient(#ffe3ec 0%,#ffd0de 55%,#c6e8b4 100%);overflow:hidden}
+.wel-inner{position:relative;z-index:2;margin:auto;padding:22px 22px 30px;text-align:center;max-width:460px;overflow-y:auto}
+.wel-inner h1{font-size:2.2rem;color:var(--carmesi);line-height:1.05;margin:6px 0 10px;text-shadow:0 3px 0 #fff}
+.quote{background:rgba(255,255,255,.8);border-radius:22px;padding:14px 16px;font-weight:600;font-size:1.02rem;
+  line-height:1.45;color:var(--vino);box-shadow:var(--sombra);margin:0 0 18px;font-style:italic}
+.small{font-size:.85rem;color:var(--suave);margin:14px 0 0}
+#welChar{width:170px;margin:0 auto;animation:bob 2.4s ease-in-out infinite}
+.petal{position:absolute;top:-30px;z-index:1;pointer-events:none;animation:fall linear infinite;opacity:.85}
+
+/* ---------- HUD ---------- */
+#hud{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;gap:10px;
+  background:linear-gradient(#ffd9e2,#ffe9ef);border-bottom:3px solid #fff}
+.chip{display:flex;align-items:center;gap:8px;background:#fff;border-radius:999px;padding:5px 16px 5px 8px;box-shadow:var(--sombra)}
+.chip b{font-family:'Baloo 2',sans-serif;font-size:1.35rem;color:var(--carmesi);line-height:1}
+.chip small{font-size:.72rem;color:var(--suave);font-weight:700;line-height:1}
+.hud-btns{display:flex;gap:10px}
+
+/* ---------- paneles ---------- */
+#panels{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:12px 12px 20px}
+.panel{display:none;animation:pop .35s ease}
+.panel.active{display:block}
+.card{background:#fff;border-radius:26px;padding:14px;margin-bottom:14px;box-shadow:var(--sombra);border:3px solid var(--rosa)}
+.card h2{font-size:1.25rem;color:var(--carmesi);display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.card p{margin:4px 0 10px;font-size:.92rem;color:var(--suave);font-weight:600;line-height:1.35}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.row.center{justify-content:center}
+
+/* ---------- escena del huerto ---------- */
+#scene{position:relative;height:200px;border-radius:26px;overflow:hidden;border:3px solid #fff;box-shadow:var(--sombra);
+  background:linear-gradient(#ffd6e4 0%,#ffeaf1 48%,#d9f0c8 49%,#b6e2a4 100%);margin-bottom:14px}
+#scene .deco{position:absolute;pointer-events:none}
+#scene .char{position:absolute;left:50%;bottom:6px;width:92px;margin-left:-46px;animation:bob 2.6s ease-in-out infinite;z-index:3}
+.cloud{position:absolute;background:#fff;border-radius:999px;opacity:.9;animation:drift 30s linear infinite}
+.cloud:before,.cloud:after{content:"";position:absolute;background:#fff;border-radius:50%}
+.cloud:before{width:55%;height:140%;left:12%;top:-60%}
+.cloud:after{width:40%;height:110%;right:14%;top:-40%}
+.picker{display:flex;gap:8px;margin-bottom:12px}
+.pick{flex:1;border:3px solid var(--rosa);background:#fff;border-radius:22px;padding:6px 4px 8px;cursor:pointer;
+  font-weight:700;font-size:.85rem;color:var(--suave);display:flex;flex-direction:column;align-items:center;gap:2px;box-shadow:var(--sombra)}
+.pick.sel{border-color:var(--fresa);background:#fff0f3;color:var(--carmesi);transform:translateY(-2px)}
+.pick svg{height:42px;width:auto}
+.plots{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.plot{position:relative;aspect-ratio:1/1.08;border:none;border-radius:26px;cursor:pointer;padding:0;overflow:hidden;
+  background:linear-gradient(#e7b7a3,#d49d88);box-shadow:inset 0 -8px 0 rgba(109,15,42,.14),var(--sombra);transition:transform .1s}
+.plot:active{transform:scale(.96)}
+.plot svg.pl{position:absolute;inset:0;width:100%;height:100%}
+.plot .lbl{position:absolute;left:0;right:0;bottom:6px;text-align:center;font-weight:700;font-size:.74rem;color:#fff;
+  text-shadow:0 1px 2px rgba(109,15,42,.6);z-index:2}
+.plot.ready{animation:glow 1.1s ease-in-out infinite}
+.plot .sway{transform-origin:50% 88%;animation:sway 3s ease-in-out infinite}
+.bar{position:absolute;left:14%;right:14%;top:7px;height:7px;border-radius:9px;background:rgba(255,255,255,.55);overflow:hidden;z-index:2}
+.bar i{display:block;height:100%;background:var(--verde);border-radius:9px;transition:width .4s}
+.drop{position:absolute;z-index:4;pointer-events:none;animation:dropfall .7s ease-in forwards}
+
+/* ---------- taller / mercado ---------- */
+.stock{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.sbtn{flex:1;min-width:92px;border:3px solid var(--rosa);background:#fff;border-radius:20px;padding:6px;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:2px;font-weight:700;font-size:.78rem;color:var(--suave)}
+.sbtn svg{height:40px;width:auto}
+.sbtn b{color:var(--carmesi);font-size:1rem}
+.sbtn[disabled]{opacity:.45;cursor:not-allowed}
+.slots{display:flex;gap:8px;justify-content:center;margin:10px 0}
+.slot{width:48px;height:48px;border-radius:50%;border:3px dashed var(--rosa2);display:grid;place-items:center;background:#fff7f9}
+.slot svg{height:36px;width:auto}
+.slot.full{border-style:solid;border-color:var(--fresa)}
+.press{position:relative;height:130px;display:grid;place-items:center}
+.press.squish .tub{animation:squish .45s ease-in-out 3}
+.tub{width:150px}
+.result{text-align:center;min-height:90px}
+.result svg{height:88px;width:auto;animation:pop .5s}
+.item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:2px dashed var(--rosa)}
+.item:last-child{border-bottom:none}
+.item svg.ic{height:44px;width:44px;flex:none}
+.item .info{flex:1;min-width:0}
+.item .info b{display:block;font-size:.98rem;color:var(--vino)}
+.item .info span{font-size:.8rem;color:var(--suave);font-weight:600}
+.price{font-family:'Baloo 2',sans-serif;color:var(--carmesi);font-weight:800}
+.item .btn{padding:9px 14px;font-size:.9rem}
+.owned{color:var(--verde);font-weight:800;font-size:.9rem}
+
+/* ---------- navegación ---------- */
+#nav{display:flex;gap:6px;padding:8px 10px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(#ffe9ef,#ffd0dc);border-top:3px solid #fff}
+.nbtn{flex:1;border:none;background:#fff;border-radius:22px;padding:7px 2px 6px;cursor:pointer;display:flex;flex-direction:column;
+  align-items:center;gap:1px;font-weight:700;font-size:.72rem;color:var(--suave);box-shadow:var(--sombra)}
+.nbtn svg{height:30px;width:30px}
+.nbtn.sel{background:var(--fresa);color:#fff}
+.nbtn:active{transform:translateY(3px)}
+
+/* ---------- minijuego ---------- */
+#mini{position:absolute;inset:0;z-index:20;display:none;flex-direction:column;background:linear-gradient(#bfe6ff 0%,#ffe3ee 70%,#c6e8b4 100%)}
+#mini.active{display:flex}
+#mgTop{position:absolute;top:0;left:0;right:0;z-index:3;display:flex;justify-content:space-between;align-items:center;padding:10px 12px;pointer-events:none}
+#mgTop>*{pointer-events:auto}
+#mgScore{font-family:'Baloo 2',sans-serif;font-size:1.5rem;color:var(--carmesi);background:#fff;border-radius:999px;padding:2px 18px;box-shadow:var(--sombra)}
+#mgLives{font-size:1.7rem;letter-spacing:2px;background:#fff;border-radius:999px;padding:0 14px;box-shadow:var(--sombra);line-height:1.5}
+.lv{color:var(--fresa)} .lv.lost{color:#e6c8d0}
+#mgCanvas{flex:1;width:100%;display:block;touch-action:none}
+#mgHint{position:absolute;left:0;right:0;bottom:14px;text-align:center;font-weight:700;color:var(--vino);z-index:2;pointer-events:none;
+  opacity:.85;font-size:.9rem;transition:opacity .6s}
+.modal{position:absolute;inset:0;z-index:30;display:none;place-items:center;background:rgba(109,15,42,.45);padding:20px}
+.modal.active{display:grid}
+.modal .box{background:var(--crema);border-radius:30px;padding:22px 20px;max-width:380px;width:100%;text-align:center;
+  border:4px solid #fff;box-shadow:0 10px 0 rgba(109,15,42,.25);animation:pop .4s}
+.modal h2{color:var(--carmesi);font-size:1.6rem}
+.modal .big{font-family:'Baloo 2',sans-serif;font-size:2.4rem;color:var(--fresa);line-height:1.1}
+.modal p{font-weight:600;line-height:1.45;color:var(--vino)}
+
+/* ---------- descanso ---------- */
+#rest{position:absolute;inset:0;z-index:25;display:none;flex-direction:column;align-items:center;justify-content:center;
+  background:linear-gradient(#3a1530 0%,#7a2a4d 45%,#e58ca6 100%);padding:20px;text-align:center;color:#fff}
+#rest.active{display:flex}
+#restScene{width:min(420px,92%)}
+#restMsg{max-width:420px;font-size:1.12rem;font-weight:600;line-height:1.5;margin:10px 0 18px;min-height:96px;
+  background:rgba(255,255,255,.14);border-radius:22px;padding:12px 16px}
+.zz{animation:floatz 3s ease-in-out infinite;font-family:'Baloo 2',sans-serif;fill:#fff}
+.steam{animation:steam 2.4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+
+/* ---------- toast / fx ---------- */
+#toast{position:absolute;left:50%;top:70px;transform:translate(-50%,-20px);z-index:60;max-width:88%;width:max-content;
+  background:#fff;color:var(--carmesi);border:3px solid var(--rosa2);border-radius:22px;padding:10px 18px;font-weight:700;
+  text-align:center;box-shadow:var(--sombra);opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;line-height:1.35}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+.fx{position:fixed;z-index:70;pointer-events:none;width:26px;animation:floatup 1.1s ease-out forwards}
+
+/* ---------- animaciones ---------- */
+@keyframes pop{0%{transform:scale(.85);opacity:0}70%{transform:scale(1.04)}100%{transform:scale(1);opacity:1}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes sway{0%,100%{transform:rotate(-2.5deg)}50%{transform:rotate(2.5deg)}}
+@keyframes glow{0%,100%{box-shadow:inset 0 -8px 0 rgba(109,15,42,.14),0 0 0 0 rgba(255,60,90,.0),var(--sombra)}
+  50%{box-shadow:inset 0 -8px 0 rgba(109,15,42,.14),0 0 0 7px rgba(255,90,120,.45),var(--sombra)}}
+@keyframes fall{0%{transform:translateY(0) rotate(0)}100%{transform:translateY(115vh) rotate(420deg)}}
+@keyframes drift{0%{transform:translateX(-120px)}100%{transform:translateX(700px)}}
+@keyframes dropfall{0%{transform:translateY(-30px);opacity:1}100%{transform:translateY(60px);opacity:0}}
+@keyframes squish{0%,100%{transform:scale(1,1)}50%{transform:scale(1.08,.82)}}
+@keyframes floatup{0%{transform:translateY(0) scale(.6);opacity:1}100%{transform:translateY(-90px) scale(1.2);opacity:0}}
+@keyframes floatz{0%{transform:translateY(0);opacity:0}30%{opacity:1}100%{transform:translateY(-34px);opacity:0}}
+@keyframes steam{0%,100%{transform:translateY(0) scaleY(1);opacity:.2}50%{transform:translateY(-10px) scaleY(1.2);opacity:.75}}
+@keyframes twinkle{0%,100%{opacity:.35}50%{opacity:1}}
+.tw{animation:twinkle 1.6s ease-in-out infinite}
+.tw:nth-child(2n){animation-delay:.5s}.tw:nth-child(3n){animation-delay:1s}
+
+@media (min-width:640px){
+  .plots{gap:14px}
+  #scene{height:230px}
+  #scene .char{width:104px;margin-left:-52px}
+}
+@media (max-height:560px){
+  #scene{height:150px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- BIENVENIDA -->
+  <section id="welcome" class="screen active">
+    <div class="wel-inner">
+      <div id="welChar"></div>
+      <h1>La Granja de Fresitas</h1>
+      <p class="quote">“Tú sabes que mi fruta favorita son las fresas? Amo las fresas, más cuando son grandes y muy rojas... al igual que las rosas y los lirios...”</p>
+      <button class="btn big" id="btnStart">Empezar a cultivar</button>
+      <p class="small">Hecho con mucho amor, solo para ti</p>
+    </div>
+  </section>
+
+  <!-- JUEGO PRINCIPAL -->
+  <section id="game" class="screen">
+    <header id="hud">
+      <div class="chip"><span id="ptsIcon"></span><div><b id="ptsNum">0</b><br><small>Fresipuntos</small></div></div>
+      <div class="hud-btns">
+        <button class="round" id="btnMusic" aria-label="Música de fondo"></button>
+        <button class="round" id="btnSound" aria-label="Efectos de sonido"></button>
+      </div>
+    </header>
+    <div id="panels">
+      <div id="tab-huerto" class="panel active"></div>
+      <div id="tab-taller" class="panel"></div>
+      <div id="tab-mercado" class="panel"></div>
+      <div id="tab-descanso" class="panel"></div>
+    </div>
+    <nav id="nav">
+      <button class="nbtn sel" data-tab="huerto"></button>
+      <button class="nbtn" data-tab="taller"></button>
+      <button class="nbtn" data-tab="mercado"></button>
+      <button class="nbtn" data-tab="descanso"></button>
+    </nav>
+  </section>
+
+  <!-- MINIJUEGO -->
+  <section id="mini">
+    <div id="mgTop">
+      <button class="round" id="mgExit" aria-label="Salir"></button>
+      <div id="mgScore">0</div>
+      <div id="mgLives"></div>
+    </div>
+    <canvas id="mgCanvas"></canvas>
+    <div id="mgHint">Desliza el dedo (o usa las flechas) para mover la cesta</div>
+    <div class="modal" id="mgOver">
+      <div class="box">
+        <h2>¡Qué lluvia tan dulce!</h2>
+        <div class="big" id="mgFinal">0</div>
+        <p id="mgConv"></p>
+        <p id="mgLove"></p>
+        <div class="row center">
+          <button class="btn" id="mgAgain">Jugar otra vez</button>
+          <button class="btn soft" id="mgBack">Volver a la granja</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DESCANSO -->
+  <section id="rest">
+    <div id="restScene"></div>
+    <div id="restMsg"></div>
+    <button class="btn big pink" id="btnRestEnd">Ya descansé, mi amor</button>
+  </section>
+
+  <div id="toast"></div>
+</div>
+<script>
+'use strict';
+/* =====================================================================
+   LA GRANJA DE FRESITAS  ·  un juego chiquito hecho con mucho amor
+   ===================================================================== */
+
+/* ---------- utilidades ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const rnd = (a, b) => a + Math.random() * (b - a);
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const SAVE_KEY = 'granja-fresitas-v1';
+
+function svg(vb, inner, cls, extra) {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}"${cls ? ` class="${cls}"` : ''}${extra ? ' ' + extra : ''}>${inner}</svg>`;
+}
+const W = (s, w) => s.replace('<svg ', `<svg width="${w}" `);
+
+/* ---------- arte vectorial ---------- */
+function fresaInner(shade) {
+  const c1 = shade ? '#c2183a' : '#ff4d5e', c2 = shade ? '#7d0c26' : '#d71f3b', hi = shade ? '#e0486a' : '#ff98a2';
+  const seeds = [[22,30],[38,28],[30,38],[18,42],[42,40],[26,50],[36,52],[30,60]]
+    .map(([x, y]) => `<ellipse cx="${x}" cy="${y}" rx="1.7" ry="2.5" fill="#ffe9a6"/>`).join('');
+  return `<path d="M30 67 C7 53 3 31 11 21 C19 13 41 13 49 21 C57 31 53 53 30 67Z" fill="${c2}"/>
+  <path d="M30 63 C12 51 8 33 14 24 C20 18 40 18 46 24 C52 33 48 51 30 63Z" fill="${c1}"/>
+  <ellipse cx="19" cy="29" rx="5" ry="8" fill="${hi}" opacity=".7" transform="rotate(25 19 29)"/>
+  ${seeds}
+  <path d="M30 17 C24 8 14 12 12 16 C18 15 22 19 30 19 C38 19 42 15 48 16 C46 12 36 8 30 17Z" fill="#5fb870"/>
+  <path d="M30 17 C28 8 31 4 33 3 C33 8 33 12 30 17Z" fill="#3f9a56"/>`;
+}
+const fresaSVG = (shade = 0, cls) => svg('0 0 60 70', fresaInner(shade), cls);
+
+function roseInner() {
+  return `<ellipse cx="30" cy="30" rx="26" ry="25" fill="#8f1230"/>
+  <circle cx="30" cy="30" r="21" fill="#b3122f"/>
+  <path d="M16 30 a14 14 0 1 1 14 14" fill="none" stroke="#7a0d26" stroke-width="2.4" stroke-linecap="round"/>
+  <circle cx="30" cy="30" r="14" fill="#d6203f"/>
+  <path d="M21 30 a9 9 0 1 1 9 9" fill="none" stroke="#8f1230" stroke-width="2.2" stroke-linecap="round"/>
+  <circle cx="30" cy="30" r="8" fill="#e8344f"/>
+  <path d="M26 30 a4 4 0 1 1 4 4" fill="none" stroke="#a5122e" stroke-width="2" stroke-linecap="round"/>
+  <path d="M14 22 C16 14 22 10 27 10" fill="none" stroke="#ff8a9b" stroke-width="2" stroke-linecap="round" opacity=".7"/>`;
+}
+const roseSVG = cls => svg('0 0 60 60', roseInner(), cls);
+
+function lilyInner() {
+  let p = '';
+  for (let i = 0; i < 6; i++) {
+    p += `<g transform="rotate(${i * 60} 30 30)"><path d="M30 30 C20 20 24 6 30 2 C36 6 40 20 30 30Z" fill="#fff3f6" stroke="#ffb3c6" stroke-width="1.5"/><path d="M30 28 C29 20 29 12 30 8" stroke="#ff8fab" stroke-width="1.6" fill="none" stroke-linecap="round"/></g>`;
+  }
+  let s = '';
+  for (let i = 0; i < 5; i++) {
+    const a = (i * 72 - 90) * Math.PI / 180, x = 30 + Math.cos(a) * 12, y = 30 + Math.sin(a) * 12;
+    s += `<line x1="30" y1="30" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#e58a3a" stroke-width="1.6"/><ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="2.6" ry="1.7" fill="#c8571c" transform="rotate(${i * 72} ${x.toFixed(1)} ${y.toFixed(1)})"/>`;
+  }
+  return p + `<circle cx="30" cy="30" r="4" fill="#ffd36b"/>` + s;
+}
+const lilySVG = cls => svg('0 0 60 60', lilyInner(), cls);
+
+const heartInner = c => `<path d="M30 54 C6 36 2 16 16 10 C24 7 30 13 30 18 C30 13 36 7 44 10 C58 16 54 36 30 54Z" fill="${c || '#ff5c7a'}"/><ellipse cx="17" cy="19" rx="4" ry="6" fill="#fff" opacity=".45" transform="rotate(30 17 19)"/>`;
+const heartSVG = (c, cls) => svg('0 0 60 60', heartInner(c), cls);
+
+const dropInner = () => `<path d="M30 5 C40 22 49 30 49 40 C49 51 40 57 30 57 C20 57 11 51 11 40 C11 30 20 22 30 5Z" fill="#6ec0ff" stroke="#3a8fd6" stroke-width="3"/><ellipse cx="22" cy="40" rx="3.5" ry="7" fill="#fff" opacity=".6" transform="rotate(12 22 40)"/>`;
+const dropSVG = cls => svg('0 0 60 60', dropInner(), cls);
+
+function thornInner() {
+  let pts = [];
+  for (let i = 0; i < 16; i++) {
+    const a = i * Math.PI / 8 - Math.PI / 2, r = i % 2 ? 14 : 28;
+    pts.push((30 + Math.cos(a) * r).toFixed(1) + ',' + (30 + Math.sin(a) * r).toFixed(1));
+  }
+  return `<polygon points="${pts.join(' ')}" fill="#3d7a46" stroke="#2a5a33" stroke-width="2" stroke-linejoin="round"/><circle cx="30" cy="30" r="8" fill="#5aa86a"/><circle cx="27" cy="27" r="2.5" fill="#fff" opacity=".5"/>`;
+}
+const thornSVG = cls => svg('0 0 60 60', thornInner(), cls);
+
+function vinoInner(res) {
+  const w = res ? '#46091c' : '#6d0f2a';
+  return `<rect x="24" y="2" width="12" height="11" rx="3" fill="${res ? '#d9a441' : '#b3122f'}"/>
+  <path d="M25 13 H35 V30 C35 36 46 42 46 56 V90 C46 95 43 98 38 98 H22 C17 98 14 95 14 90 V56 C14 42 25 36 25 30Z" fill="${w}"/>
+  <path d="M19 52 V90" stroke="#ff8aa0" stroke-width="3" stroke-linecap="round" opacity=".35"/>
+  <rect x="17" y="58" width="26" height="28" rx="4" fill="#fff3ea"/>
+  <g transform="translate(22.5 62) scale(.25)">${fresaInner(res ? 1 : 0)}</g>
+  <rect x="20" y="83" width="20" height="2.4" rx="1" fill="${res ? '#d9a441' : '#e63950'}"/>`;
+}
+const vinoSVG = (res, cls) => svg('0 0 60 100', vinoInner(res), cls);
+
+function ramoInner() {
+  return `<g transform="translate(14 8) scale(.55)">${lilyInner()}</g>
+  <g transform="translate(52 6) scale(.55)">${lilyInner()}</g>
+  <path d="M50 106 L16 54 L84 54Z" fill="#ffc2d1" stroke="#ff8fab" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M50 106 L34 54 L50 62 L66 54Z" fill="#ffe0e8" opacity=".85"/>
+  <g transform="translate(5 34) scale(.52)">${roseInner()}</g>
+  <g transform="translate(32 20) scale(.62)">${roseInner()}</g>
+  <g transform="translate(63 34) scale(.52)">${roseInner()}</g>
+  <path d="M36 74 Q50 84 64 74 L60 88 Q50 94 40 88Z" fill="#b3122f"/><circle cx="50" cy="80" r="4.5" fill="#8f1230"/>`;
+}
+const ramoSVG = cls => svg('0 0 100 110', ramoInner(), cls);
+
+/* planta del huerto según etapa */
+function plantSVG(p) {
+  const soil = `<ellipse cx="50" cy="95" rx="38" ry="9" fill="#a9705f" opacity=".5"/><ellipse cx="50" cy="91" rx="31" ry="8" fill="#b87b69"/>`;
+  const L = (x, y, r, s, c) => `<g transform="translate(${x} ${y}) rotate(${r}) scale(${s})"><path d="M0 0 C-10 -8 -8 -22 0 -26 C8 -22 10 -8 0 0Z" fill="${c || '#6fbf73'}"/><path d="M0 0 V-20" stroke="#4a9a5a" stroke-width="1.4"/></g>`;
+  let b = '';
+  if (p.st === 0) {
+    b = `<g opacity=".6"><circle cx="50" cy="62" r="17" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="5 6"/><path d="M50 53 V71 M41 62 H59" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></g>`;
+  } else if (p.st === 1) {
+    const c = p.t === 'fresa' ? '#6b3a2a' : p.t === 'rosa' ? '#7a4a3a' : '#c9a25a';
+    b = `<ellipse cx="50" cy="85" rx="5.5" ry="3.6" fill="${c}"/><ellipse cx="48.5" cy="84" rx="2" ry="1.1" fill="#fff" opacity=".35"/>`;
+  } else if (p.st === 2) {
+    b = `<g class="sway"><path d="M50 90 V72" stroke="#5aa86a" stroke-width="4" stroke-linecap="round"/>${L(50, 76, -45, .6)}${L(50, 76, 45, .6)}</g>`;
+  } else {
+    const ripe = p.st === 4;
+    if (p.t === 'fresa') {
+      let fr = '';
+      if (ripe) {
+        const sc = [0, .5, .65, .8][p.size || 2];
+        [[30, 74, 1], [70, 74, .85], [50, 62, .93]].forEach(([x, y, m]) => {
+          const s = sc * m;
+          fr += `<g transform="translate(${(x - 30 * s).toFixed(1)} ${(y - 35 * s).toFixed(1)}) scale(${s.toFixed(2)})">${fresaInner(p.shade)}</g>`;
+        });
+      } else {
+        fr = `<g transform="translate(50 52)">${[0, 72, 144, 216, 288].map(a => `<ellipse cx="0" cy="-7" rx="3.6" ry="5" fill="#fff" transform="rotate(${a})"/>`).join('')}<circle r="2.8" fill="#ffd54a"/></g>`;
+      }
+      b = `<g class="sway"><path d="M50 90 V60" stroke="#5aa86a" stroke-width="4" stroke-linecap="round"/>${L(50, 86, -62, .95)}${L(50, 86, 62, .95)}${L(50, 72, -30, .8)}${L(50, 72, 30, .8)}${fr}</g>`;
+    } else if (p.t === 'rosa') {
+      const top = ripe ? `<g transform="translate(29 20) scale(.7)">${roseInner()}</g>`
+        : `<g transform="translate(50 54)"><ellipse rx="7" ry="10" fill="#c2183a"/><path d="M-8 -2 C-8 9 8 9 8 -2 C4 4 -4 4 -8 -2Z" fill="#5aa86a"/><path d="M0 -10 C-4 -4 4 -4 0 -10" fill="#e8344f"/></g>`;
+      b = `<g class="sway"><path d="M50 90 V60" stroke="#4f9a5c" stroke-width="4" stroke-linecap="round"/>${L(50, 84, -55, .8)}${L(50, 84, 55, .8)}${L(50, 72, -35, .65)}${L(50, 72, 35, .65)}${top}</g>`;
+    } else {
+      const top = ripe ? `<g transform="translate(25 16) scale(.8)">${lilyInner()}</g>`
+        : `<g transform="translate(50 52) rotate(-8)"><path d="M0 12 C-9 4 -7 -10 0 -16 C7 -10 9 4 0 12Z" fill="#ffe3ea" stroke="#ffb3c6" stroke-width="1.5"/><path d="M0 12 C-4 4 -3 -6 0 -14" stroke="#8ccf8f" stroke-width="2" fill="none"/></g>`;
+      b = `<g class="sway"><path d="M50 90 V62" stroke="#4f9a5c" stroke-width="4" stroke-linecap="round"/>${L(50, 88, -72, 1.0, '#79c488')}${L(50, 88, 72, 1.0, '#79c488')}${L(50, 82, -20, 1.05, '#79c488')}${top}</g>`;
+    }
+  }
+  return svg('0 0 100 108', soil + b, 'pl');
+}
+
+/* Fresita, la granjerita protagonista (personaje original) */
+function fresitaInner(eyes) {
+  const eye = eyes === 'closed'
+    ? `<path d="M43 74 q6 6 12 0 M65 74 q6 6 12 0" stroke="#5a1730" stroke-width="2.8" fill="none" stroke-linecap="round"/>`
+    : `<circle cx="49" cy="73" r="4.2" fill="#3a1226"/><circle cx="71" cy="73" r="4.2" fill="#3a1226"/><circle cx="50.4" cy="71.5" r="1.5" fill="#fff"/><circle cx="72.4" cy="71.5" r="1.5" fill="#fff"/>`;
+  const seeds = [[28,70],[92,70],[24,92],[96,92],[32,112],[88,112],[40,58],[80,58]]
+    .map(([x, y]) => `<ellipse cx="${x}" cy="${y}" rx="1.8" ry="2.6" fill="#ffe9a6"/>`).join('');
+  return `<ellipse cx="60" cy="145" rx="36" ry="6" fill="#6d0f2a" opacity=".15"/>
+  <ellipse cx="46" cy="140" rx="11" ry="6" fill="#f2a2b3"/><ellipse cx="74" cy="140" rx="11" ry="6" fill="#f2a2b3"/>
+  <path d="M60 141 C22 121 14 72 28 54 C42 38 78 38 92 54 C106 72 98 121 60 141Z" fill="#e63950"/>
+  <path d="M60 135 C30 117 22 74 34 58 C44 46 76 46 86 58 C98 74 90 117 60 135Z" fill="#f04a62"/>
+  ${seeds}
+  <ellipse cx="17" cy="98" rx="8" ry="12" fill="#e63950" transform="rotate(22 17 98)"/>
+  <ellipse cx="103" cy="98" rx="8" ry="12" fill="#e63950" transform="rotate(-22 103 98)"/>
+  <ellipse cx="60" cy="77" rx="28" ry="23" fill="#ffe6ea"/>
+  <ellipse cx="39" cy="84" rx="5.5" ry="3.4" fill="#ff9eb5" opacity=".85"/><ellipse cx="81" cy="84" rx="5.5" ry="3.4" fill="#ff9eb5" opacity=".85"/>
+  ${eye}
+  <path d="M55 82 q5 5.5 10 0" stroke="#b3122f" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+  <path d="M40 101 H80 L88 126 C78 137 42 137 32 126Z" fill="#fff6f1" stroke="#ffb7c9" stroke-width="2.4" stroke-linejoin="round"/>
+  <g transform="translate(51 108) scale(.3)">${heartInner('#e63950')}</g>
+  <ellipse cx="60" cy="46" rx="50" ry="11" fill="#e5bb5c"/>
+  <ellipse cx="60" cy="43" rx="48" ry="10" fill="#f1cf7a"/>
+  <path d="M33 43 C33 14 87 14 87 43Z" fill="#f7e2a2"/>
+  <path d="M34 38 Q60 49 86 38 L87 44 Q60 55 33 44Z" fill="#8f1230"/>
+  <path d="M42 28 l4 -6 M56 24 l3 -6 M72 26 l3 -6 M80 34 l4 -4" stroke="#e0c070" stroke-width="2" stroke-linecap="round"/>
+  <g transform="translate(80 44)"><ellipse cx="-4" cy="-3" rx="7" ry="4.5" fill="#b3122f" transform="rotate(-25)"/><ellipse cx="6" cy="-3" rx="7" ry="4.5" fill="#b3122f" transform="rotate(25)"/><circle cx="1" cy="-2" r="3.2" fill="#8f1230"/></g>
+  <path d="M60 18 C52 6 44 10 44 14 C50 14 54 18 60 18Z M60 18 C68 6 76 10 76 14 C70 14 66 18 60 18Z" fill="#5fb870"/>`;
+}
+const fresitaSVG = (eyes, cls) => svg('0 0 120 152', fresitaInner(eyes), cls);
+
+/* iconos de navegación y botones */
+const ICON = {
+  huerto: svg('0 0 60 60', `<ellipse cx="30" cy="52" rx="20" ry="5" fill="#b87b69"/><path d="M30 52 V28" stroke="#5aa86a" stroke-width="4" stroke-linecap="round"/><path d="M30 34 C16 34 10 24 10 16 C22 16 30 22 30 34Z" fill="#6fbf73"/><path d="M30 28 C42 28 50 20 50 11 C38 11 30 17 30 28Z" fill="#8ccf8f"/>`),
+  taller: svg('0 0 60 60', `<g transform="translate(13 1) scale(.6)">${vinoInner(0)}</g>`),
+  mercado: svg('0 0 60 60', `<rect x="9" y="26" width="42" height="26" rx="3" fill="#fff3ea" stroke="#ffb7c9" stroke-width="3"/><path d="M6 26 L12 10 H48 L54 26Z" fill="#e63950"/><path d="M18 10 L16 26 M30 10 V26 M42 10 L44 26" stroke="#fff" stroke-width="4"/><rect x="24" y="36" width="12" height="16" rx="2" fill="#ffb7c9"/>`),
+  descanso: svg('0 0 60 60', `<path d="M10 24 H44 V34 C44 46 10 46 10 34Z" fill="#fff" stroke="#ffb7c9" stroke-width="3"/><path d="M44 28 C54 26 54 40 44 38" fill="none" stroke="#ffb7c9" stroke-width="3.5"/><ellipse cx="27" cy="24" rx="17" ry="3.5" fill="#e8b84a"/><path d="M20 16 q-4 -5 0 -9 M30 16 q-4 -5 0 -9" stroke="#ffb7c9" stroke-width="2.6" fill="none" stroke-linecap="round"/>`),
+  note: svg('0 0 60 60', `<path d="M24 44 V14 L46 9 V38" fill="none" stroke="#b3122f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="19" cy="45" rx="7" ry="5.5" fill="#e63950"/><ellipse cx="41" cy="39" rx="7" ry="5.5" fill="#e63950"/>`),
+  sound: svg('0 0 60 60', `<path d="M10 24 H20 L32 13 V47 L20 36 H10Z" fill="#e63950"/><path d="M39 22 C45 28 45 34 39 40 M45 15 C55 25 55 37 45 47" fill="none" stroke="#b3122f" stroke-width="4" stroke-linecap="round"/>`),
+  back: svg('0 0 60 60', `<path d="M36 12 L18 30 L36 48" fill="none" stroke="#b3122f" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>`)
+};
+
+/* ---------- estado y guardado ---------- */
+function defaults() {
+  return {
+    pts: 25,
+    plots: Array.from({ length: 6 }, () => ({ t: null, st: 0, size: 2, shade: 0, at: 0 })),
+    inv: { frG: 0, frC: 0, frP: 0, rosa: 0, lirio: 0, vino: 0, vinoR: 0, ramo: 0 },
+    decor: {}, music: true, sound: true, tool: 'fresa', lastRest: 0
+  };
+}
+function load() {
+  try {
+    const r = JSON.parse(localStorage.getItem(SAVE_KEY));
+    if (r && typeof r === 'object') {
+      const d = defaults();
+      return Object.assign(d, r, {
+        inv: Object.assign(d.inv, r.inv || {}),
+        decor: r.decor || {},
+        plots: (r.plots && r.plots.length === 6) ? r.plots : d.plots
+      });
+    }
+  } catch (e) { /* sin guardado */ }
+  return defaults();
+}
+function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) { /* ok */ } }
+let S = load();
+
+/* ---------- mensajes de amor ---------- */
+const MSG = {
+  cosecha: [
+    '¡Eres la fresa más dulce de mi vida!',
+    'Te amo más que a un cultivo lleno de rosas carmesí.',
+    'Cada fresa roja me recuerda tu sonrisa.',
+    'Qué bonito huerto, qué bonita tú.',
+    'Cosechas con las manos más tiernas del mundo.',
+    'Contigo todo florece, mi amor.',
+    'Roja, grande y perfecta, como lo que siento por ti.'
+  ],
+  flor: [
+    'Las rosas se ven bonitas, pero tú te ves mejor.',
+    'Un lirio para tu día, un abrazo para tu corazón.',
+    'Todo lo que cuidas florece, igual que mi amor por ti.'
+  ],
+  venta: [
+    'Tómate tu tiempo, hoy Fresita trabaja por ti.',
+    '¡Brindo por ti con este vino de fresa!',
+    'Eres mi vino favorito y mi fresa más dulce.',
+    'Cada venta es un besito más para ti.',
+    'Dulce como tú, intenso como lo que siento.'
+  ],
+  juego: [
+    'Atrapaste fresas, pero tú ya atrapaste mi corazón.',
+    'Pierdas o ganes, eres mi campeona favorita.',
+    'Qué bonito verte sonreír, aunque sea desde lejos.',
+    'Eres capaz de todo, y yo te aplaudo desde aquí.'
+  ],
+  descanso: [
+    'Está bien descansar. Tu cuerpo te está cuidando y tú mereces cuidarte también.',
+    'Eres súper valiosa, incluso cuando solo descansas. Te amo muchísimo.',
+    'Hoy no tienes que demostrar nada. Cobijita, té calientito y todo mi cariño para ti.',
+    'Respira hondo. Lo que hiciste hoy ya es suficiente. Te amo.',
+    'Si hoy te duele o estás cansada, que el mundo espere. Aquí estoy, abrazándote en pensamiento.'
+  ]
+};
+
+/* ---------- audio (Web Audio API, todo por código) ---------- */
+let AC = null, master, sfxGain, musicGain;
+function ac() {
+  if (!AC) {
+    const C = window.AudioContext || window.webkitAudioContext;
+    if (!C) return null;
+    AC = new C();
+    master = AC.createGain(); master.gain.value = .9; master.connect(AC.destination);
+    sfxGain = AC.createGain(); sfxGain.gain.value = .55; sfxGain.connect(master);
+    musicGain = AC.createGain(); musicGain.gain.value = .2; musicGain.connect(master);
+  }
+  if (AC.state === 'suspended') AC.resume();
+  return AC;
+}
+function tone(f, t0, dur, type, vol, dest, slideTo, att) {
+  const o = AC.createOscillator(), g = AC.createGain(), a = att || .015;
+  o.type = type || 'sine';
+  o.frequency.setValueAtTime(f, t0);
+  if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, t0 + dur);
+  g.gain.setValueAtTime(.0001, t0);
+  g.gain.exponentialRampToValueAtTime(vol || .3, t0 + a);
+  g.gain.exponentialRampToValueAtTime(.0001, t0 + dur);
+  o.connect(g); g.connect(dest || sfxGain);
+  o.start(t0); o.stop(t0 + dur + .05);
+}
+const mf = m => 440 * Math.pow(2, (m - 69) / 12);
+const SFX = {
+  click() { const t = AC.currentTime; tone(660, t, .09, 'sine', .25, sfxGain, 990); },
+  plant() { const t = AC.currentTime; tone(300, t, .12, 'triangle', .3, sfxGain, 200); tone(430, t + .08, .12, 'triangle', .2); },
+  water() { const t = AC.currentTime; for (let i = 0; i < 6; i++) tone(900 + Math.random() * 500, t + i * .06, .08, 'sine', .12, sfxGain, 500); },
+  grow() { const t = AC.currentTime; [523, 659, 784].forEach((f, i) => tone(f, t + i * .07, .2, 'sine', .18)); },
+  harvest() { const t = AC.currentTime; [659, 784, 988, 1319].forEach((f, i) => tone(f, t + i * .07, .25, 'triangle', .24)); },
+  catch() { const t = AC.currentTime; tone(880, t, .1, 'triangle', .25); tone(1175, t + .06, .14, 'triangle', .22); },
+  gold() { const t = AC.currentTime; [988, 1319, 1568].forEach((f, i) => tone(f, t + i * .06, .2, 'triangle', .25)); },
+  bad() { const t = AC.currentTime; tone(240, t, .3, 'sawtooth', .16, sfxGain, 100); },
+  sell() { const t = AC.currentTime; tone(1047, t, .1, 'square', .1); tone(1568, t + .09, .25, 'square', .1); },
+  press() { const t = AC.currentTime; tone(150, t, .22, 'sine', .45, sfxGain, 60); tone(500, t, .12, 'triangle', .1, sfxGain, 250); },
+  unlock() { const t = AC.currentTime; [523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, t + i * .08, .3, 'triangle', .22)); },
+  rest() {
+    const t = AC.currentTime + .05;
+    [72, 76, 79, 76, 74, 72, 71, 72, 69, 72].forEach((m, i) => tone(mf(m), t + i * .55, 1.1, 'sine', .22, sfxGain, 0, .08));
+    [[48, 52, 55], [45, 48, 52], [41, 45, 48], [43, 47, 50]].forEach((c, i) => c.forEach(n => tone(mf(n), t + i * 1.4, 2.2, 'sine', .08, sfxGain, 0, .4)));
+  }
+};
+function sfx(n) { if (!S.sound) return; if (!ac()) return; try { SFX[n](); } catch (e) { /* ok */ } }
+
+/* música de fondo tranquila estilo lo-fi tierno */
+const CH = [[60, 64, 67, 71], [57, 60, 64, 67], [60, 64, 65, 69], [62, 64, 67, 71]];
+const BASS = [48, 45, 41, 43], PAT = [0, 2, 1, 3, 2, 3, 1, 2];
+let musicTimer = null, nextT = 0, stepI = 0, noiseBuf = null;
+function hat(t, dest) {
+  if (!noiseBuf) {
+    noiseBuf = AC.createBuffer(1, Math.floor(AC.sampleRate * .1), AC.sampleRate);
+    const d = noiseBuf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  }
+  const s = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain();
+  s.buffer = noiseBuf; f.type = 'highpass'; f.frequency.value = 7000;
+  g.gain.setValueAtTime(.14, t); g.gain.exponentialRampToValueAtTime(.001, t + .05);
+  s.connect(f); f.connect(g); g.connect(dest); s.start(t); s.stop(t + .08);
+}
+function scheduleMusic() {
+  const E = 60 / 76 / 2;
+  if (nextT < AC.currentTime) nextT = AC.currentTime + .05;
+  while (nextT < AC.currentTime + .4) {
+    const bar = Math.floor(stepI / 8) % 4, s = stepI % 8, ch = CH[bar];
+    tone(mf(ch[PAT[s]]), nextT, .55, 'triangle', .5, musicGain);
+    if (s === 0) {
+      tone(mf(BASS[bar]), nextT, E * 7.5, 'sine', .9, musicGain, 0, .05);
+      ch.slice(0, 3).forEach(n => tone(mf(n - 12), nextT, E * 7.5, 'sine', .22, musicGain, 0, .25));
+      tone(90, nextT, .22, 'sine', .8, musicGain, 45);
+    }
+    if (s === 4) { tone(mf(BASS[bar] + 7), nextT, .6, 'sine', .4, musicGain); tone(90, nextT, .22, 'sine', .6, musicGain, 45); }
+    if (s % 2 === 1) hat(nextT, musicGain);
+    if (s === 0 && bar % 2 === 1 && Math.random() < .75) tone(mf(ch[3] + 12), nextT + E * 2, .8, 'sine', .3, musicGain);
+    nextT += E; stepI++;
+  }
+}
+function startMusic() {
+  if (!S.music || !ac() || musicTimer) return;
+  nextT = AC.currentTime + .1; stepI = 0;
+  musicTimer = setInterval(() => { if (AC && AC.state === 'running') scheduleMusic(); }, 120);
+}
+function stopMusic() { clearInterval(musicTimer); musicTimer = null; }
+function updateAudioBtns() {
+  $('#btnMusic').classList.toggle('off', !S.music);
+  $('#btnSound').classList.toggle('off', !S.sound);
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) stopMusic();
+  else if (S.music && !$('#welcome').classList.contains('active') && !$('#rest').classList.contains('active')) startMusic();
+});
+
+/* ---------- interfaz común ---------- */
+let toastT;
+function toast(msg, ms) {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), ms || 3600);
+}
+function hearts(x, y, n) {
+  n = n || 5;
+  for (let i = 0; i < n; i++) {
+    const d = document.createElement('div');
+    d.className = 'fx';
+    d.innerHTML = heartSVG(pick(['#ff5c7a', '#e63950', '#ff8fab']));
+    d.style.left = (x + rnd(-30, 30)) + 'px';
+    d.style.top = (y + rnd(-14, 14)) + 'px';
+    d.style.width = rnd(18, 30) + 'px';
+    d.style.animationDelay = (i * .07) + 's';
+    document.body.appendChild(d);
+    setTimeout(() => d.remove(), 1500);
+  }
+}
+function heartsAt(el, n) {
+  const r = el.getBoundingClientRect();
+  hearts(r.left + r.width / 2, r.top + r.height / 2, n);
+}
+function updateHud() { $('#ptsNum').textContent = S.pts; }
+function addPts(n) {
+  S.pts += n; updateHud(); save();
+  const c = $('#ptsNum'); c.style.transform = 'scale(1.3)'; setTimeout(() => c.style.transform = '', 200);
+}
+function show(id) { $$('.screen').forEach(s => s.classList.toggle('active', s.id === id)); }
+function tab(name) {
+  $$('.panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + name));
+  $$('.nbtn').forEach(b => b.classList.toggle('sel', b.dataset.tab === name));
+  if (name === 'taller') renderTaller();
+  if (name === 'mercado') renderMercado();
+  if (name === 'descanso') renderDescanso();
+  $('#panels').scrollTop = 0;
+}
+
+/* =====================================================================
+   HUERTO: sembrar, regar, esperar, cosechar
+   ===================================================================== */
+const GROW = { fresa: 5000, rosa: 6500, lirio: 6500 };   // milisegundos por etapa
+const PLANT_NAME = { fresa: 'Fresa', rosa: 'Rosa roja', lirio: 'Lirio' };
+const pickSize = () => { const r = Math.random(); return r < .2 ? 1 : r < .55 ? 2 : 3; };
+
+/* decoraciones desbloqueables */
+const bowInner = (c, k) => `<path d="M0 0 L-8 15 L-3 11 L0 17Z M0 0 L8 15 L3 11 L0 17Z" fill="${c}" opacity=".9"/><ellipse cx="-8" cy="-2" rx="9" ry="6" fill="${c}" transform="rotate(-20 -8 -2)"/><ellipse cx="8" cy="-2" rx="9" ry="6" fill="${c}" transform="rotate(20 8 -2)"/><circle r="4.2" fill="${k}"/>`;
+const DECOR_ICON = {
+  luces: () => svg('0 0 100 50', `<path d="M4 10 Q50 44 96 10" fill="none" stroke="#8f1230" stroke-width="2"/>${[[14,20,'#ff5c7a'],[30,29,'#ffd36b'],[50,33,'#ff9eb5'],[70,29,'#ffd36b'],[86,20,'#ff5c7a']].map(([x,y,c]) => `<circle class="tw" cx="${x}" cy="${y}" r="5" fill="${c}"/>`).join('')}`),
+  lazos: () => svg('0 0 60 60', `<g transform="translate(30 24) scale(1.5)">${bowInner('#ff8fab', '#e63950')}</g>`),
+  cama: () => svg('0 0 100 60', `<rect x="2" y="30" width="96" height="22" rx="6" fill="#8f1230"/><rect x="2" y="10" width="10" height="42" rx="4" fill="#6d0f2a"/><rect x="8" y="24" width="86" height="14" rx="7" fill="#ffd9e2"/><rect x="14" y="14" width="26" height="14" rx="7" fill="#fff"/><rect x="44" y="18" width="48" height="22" rx="8" fill="#e63950"/><g transform="translate(68 24) scale(.2)">${heartInner('#ffb7c9')}</g><rect x="8" y="50" width="6" height="8" fill="#6d0f2a"/><rect x="86" y="50" width="6" height="8" fill="#6d0f2a"/>`),
+  macetas: () => svg('0 0 100 72', `<path d="M8 44 H40 L36 68 H12Z" fill="#ff9eb5"/><rect x="5" y="40" width="38" height="8" rx="3" fill="#ff7d9d"/><path d="M24 40 V30" stroke="#4f9a5c" stroke-width="3"/><g transform="translate(9 6) scale(.5)">${roseInner()}</g><path d="M58 44 H90 L86 68 H62Z" fill="#ffc2d1"/><rect x="55" y="40" width="38" height="8" rx="3" fill="#ff9eb5"/><path d="M74 40 V30" stroke="#4f9a5c" stroke-width="3"/><g transform="translate(59 6) scale(.5)">${lilyInner()}</g>`),
+  arco: () => {
+    const pts = [[12, 50], [14, 32], [24, 19], [45, 13], [66, 19], [76, 32], [78, 50]];
+    return svg('0 0 90 120', `<rect x="8" y="48" width="8" height="70" rx="3" fill="#fff"/><rect x="74" y="48" width="8" height="70" rx="3" fill="#fff"/><path d="M12 50 C12 4 78 4 78 50" fill="none" stroke="#6fbf73" stroke-width="5" stroke-linecap="round"/>${pts.map(([x, y]) => `<g transform="translate(${x - 8} ${y - 8}) scale(.27)">${roseInner()}</g>`).join('')}`);
+  }
+};
+const DECOR = [
+  { id: 'luces', n: 'Luces de hadas', d: 'Para que el huerto brille', p: 60 },
+  { id: 'lazos', n: 'Lazos rosados', d: 'Un lacito en cada poste', p: 80 },
+  { id: 'cama', n: 'Camita de descanso', d: 'Cobijita para las siestas', p: 100 },
+  { id: 'macetas', n: 'Macetas especiales', d: 'Con rosas y lirios', p: 120 },
+  { id: 'arco', n: 'Arco de rosas', d: 'Fresita lo estrena contigo', p: 160 }
+];
+
+function renderScene() {
+  const d = S.decor;
+  let h = `<div class="cloud" style="width:70px;height:22px;top:16px;left:-80px;animation-duration:38s"></div>
+  <div class="cloud" style="width:50px;height:16px;top:44px;left:-60px;animation-duration:54s;animation-delay:-22s"></div>
+  <svg class="deco" style="left:0;bottom:0;width:100%;height:62%" viewBox="0 0 400 120" preserveAspectRatio="none"><path d="M0 60 C60 20 140 20 200 55 C260 90 340 30 400 50 V120 H0Z" fill="#b6e2a4"/><path d="M0 88 C80 62 160 98 240 78 C300 64 360 82 400 80 V120 H0Z" fill="#a7d99b"/></svg>`;
+  let posts = '', bows = '';
+  for (let x = 20; x <= 380; x += 40) {
+    posts += `<rect x="${x - 5}" y="12" width="10" height="36" rx="4" fill="#fff"/>`;
+    if (d.lazos) bows += `<g transform="translate(${x} 20) scale(.8)">${bowInner('#ff8fab', '#e63950')}</g>`;
+  }
+  h += `<svg class="deco" style="left:0;bottom:50px;width:100%" viewBox="0 0 400 50">${posts}<rect x="0" y="20" width="400" height="6" rx="3" fill="#fff"/><rect x="0" y="34" width="400" height="6" rx="3" fill="#fff"/>${bows}</svg>`;
+  if (d.luces) {
+    const cols = ['#ff5c7a', '#ffd36b', '#ff9eb5', '#fff'];
+    let b = '';
+    for (let i = 0; i <= 16; i++) {
+      const x = i * 25, y = 14 + Math.sin(i * Math.PI / 2) * 6 + 4;
+      b += `<circle class="tw" cx="${x}" cy="${y.toFixed(1)}" r="4.5" fill="${cols[i % 4]}"/>`;
+    }
+    h += `<svg class="deco" style="left:0;top:0;width:100%;z-index:4" viewBox="0 0 400 40"><path d="M0 18 ${Array.from({ length: 16 }, (_, i) => `Q${i * 25 + 12.5} ${i % 2 ? 12 : 34} ${(i + 1) * 25} 18`).join(' ')}" fill="none" stroke="#8f1230" stroke-width="1.6"/>${b}</svg>`;
+  }
+  if (d.arco) h += `<div class="deco" style="left:50%;margin-left:-48px;bottom:16px;width:96px;z-index:1">${DECOR_ICON.arco()}</div>`;
+  if (d.macetas) h += `<div class="deco" style="left:4%;bottom:6px;width:23%;z-index:2">${DECOR_ICON.macetas()}</div>`;
+  if (d.cama) h += `<div class="deco" style="right:4%;bottom:6px;width:27%;z-index:2">${DECOR_ICON.cama()}</div>`;
+  h += `<div class="char">${fresitaSVG('open')}</div>`;
+  $('#scene').innerHTML = h;
+}
+
+function updateBasket() {
+  const i = S.inv;
+  $('#basket').innerHTML = [
+    [fresaSVG(0), i.frG, 'Fresas rojas grandes'], [fresaSVG(1), i.frC, 'Fresas carmesí'], [fresaSVG(0), i.frP, 'Fresas pequeñas'],
+    [roseSVG(), i.rosa, 'Rosas rojas'], [lilySVG(), i.lirio, 'Lirios']
+  ].map(([ic, n, l]) => `<div class="chip" title="${l}" style="padding:3px 11px 3px 7px;gap:5px">${W(ic, 24)}<b style="font-size:1.05rem">${n}</b></div>`).join('');
+}
+
+function buildHuerto() {
+  $('#tab-huerto').innerHTML = `<div id="scene"></div>
+  <button class="btn big wine" id="btnMini" style="width:100%;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:10px">${W(fresaSVG(1), 26)} Jugar: Lluvia de Fresas</button>
+  <div class="stock" id="basket" style="margin-bottom:12px"></div>
+  <div class="picker" id="picker">${['fresa', 'rosa', 'lirio'].map(k => `<button class="pick" data-k="${k}">${k === 'fresa' ? fresaSVG(0) : k === 'rosa' ? roseSVG() : lilySVG()}${PLANT_NAME[k]}</button>`).join('')}</div>
+  <div class="plots" id="plots">${S.plots.map((_, i) => `<button class="plot" data-i="${i}"></button>`).join('')}</div>
+  <div class="card"><p style="margin:0"><b>Cómo se juega:</b> elige una semilla, toca un cuadrito vacío para plantarla, tócalo otra vez para regarla y espera a que crezca. ¡Cuando brille, toca para cosechar!</p></div>`;
+  renderScene(); updateBasket(); updatePickers(); updatePlots(true);
+  $('#picker').addEventListener('click', e => {
+    const b = e.target.closest('.pick'); if (!b) return;
+    S.tool = b.dataset.k; save(); sfx('click'); updatePickers();
+  });
+  $('#plots').addEventListener('click', e => {
+    const b = e.target.closest('.plot'); if (b) plotTap(+b.dataset.i, b);
+  });
+  $('#btnMini').addEventListener('click', () => { sfx('click'); startMini(); });
+}
+function updatePickers() { $$('#picker .pick').forEach(b => b.classList.toggle('sel', b.dataset.k === S.tool)); }
+
+function updatePlots(force) {
+  const now = Date.now();
+  $$('#plots .plot').forEach((b, i) => {
+    const p = S.plots[i], sig = [p.t, p.st, p.size, p.shade].join('|');
+    if (force || b.dataset.sig !== sig) {
+      b.dataset.sig = sig;
+      const lbl = ['Plantar', 'Regar', 'Creciendo…', 'Creciendo…', '¡Cosechar!'][p.st];
+      b.innerHTML = plantSVG(p) + (p.st === 2 || p.st === 3 ? '<div class="bar"><i></i></div>' : '') + `<div class="lbl">${lbl}</div>`;
+      b.classList.toggle('ready', p.st === 4);
+    }
+    const bar = b.querySelector('.bar i');
+    if (bar) {
+      const f = ((p.st - 2) + Math.max(0, Math.min(1, 1 - (p.at - now) / GROW[p.t]))) / 2;
+      bar.style.width = (f * 100).toFixed(0) + '%';
+    }
+  });
+}
+
+function plotTap(i, btn) {
+  const p = S.plots[i];
+  if (p.st === 0) {
+    p.t = S.tool; p.st = 1; p.size = 2; p.shade = 0; sfx('plant');
+  } else if (p.st === 1) {
+    p.st = 2; p.at = Date.now() + GROW[p.t]; sfx('water');
+    for (let k = 0; k < 4; k++) {
+      const d = document.createElement('div');
+      d.className = 'drop'; d.style.left = (22 + k * 16 + rnd(-4, 4)) + '%'; d.style.top = '8%';
+      d.style.width = '14px'; d.style.animationDelay = (k * .1) + 's';
+      d.innerHTML = dropSVG(); btn.appendChild(d); setTimeout(() => d.remove(), 1000);
+    }
+  } else if (p.st === 4) {
+    harvest(p, btn);
+  } else {
+    toast(pick(['Shhh, está creciendo…', 'Un poquito de paciencia, mi amor.', 'Las cosas bonitas se toman su tiempo.']), 2200);
+    sfx('click');
+  }
+  save(); updatePlots(); updateBasket();
+}
+
+function harvest(p, btn) {
+  const inv = S.inv; let msg;
+  if (p.t === 'fresa') {
+    if (p.size === 1) inv.frP += 2;
+    else { const n = p.size === 3 ? 3 : 2; if (p.shade) inv.frC += n; else inv.frG += n; }
+    msg = pick(MSG.cosecha);
+  } else if (p.t === 'rosa') { inv.rosa += 2; msg = pick(MSG.flor); }
+  else { inv.lirio += 2; msg = pick(MSG.flor); }
+  p.t = null; p.st = 0; p.at = 0;
+  sfx('harvest'); heartsAt(btn, 6); toast(msg);
+}
+
+function tick() {
+  const now = Date.now(); let changed = false;
+  S.plots.forEach(p => {
+    while (p.st >= 2 && p.st < 4 && now >= p.at) {
+      p.st++; changed = true;
+      if (p.st < 4) p.at += GROW[p.t];
+      else { p.size = pickSize(); p.shade = Math.random() < .4 ? 1 : 0; }
+    }
+  });
+  if (changed) { save(); sfx('grow'); }
+  if ($('#tab-huerto').classList.contains('active') && $('#game').classList.contains('active')) updatePlots();
+}
+
+/* =====================================================================
+   TALLER: vino tinto de fresa y ramos especiales
+   ===================================================================== */
+let press = [];   // fresas elegidas para la prensa: 'frG' | 'frC'
+let lastWine = null, lastRamo = false;
+const TUB = svg('0 0 150 112', `<path d="M22 40 H128 L120 98 C118 104 108 106 100 106 H50 C42 106 32 104 30 98Z" fill="#c98a5f"/><path d="M25 62 H125 M27 82 H123" stroke="#8f5a38" stroke-width="5"/><ellipse cx="75" cy="40" rx="53" ry="14" fill="#a8683f"/><ellipse cx="75" cy="40" rx="46" ry="10" fill="#b3122f"/><ellipse cx="62" cy="38" rx="14" ry="3.5" fill="#e8344f" opacity=".7"/><circle cx="92" cy="40" r="3" fill="#ff8a9b"/><circle cx="100" cy="43" r="2" fill="#ff8a9b"/><rect x="62" y="6" width="26" height="12" rx="6" fill="#8f5a38"/><rect x="72" y="14" width="6" height="22" fill="#8f5a38"/>`, 'tub');
+
+function renderTaller() {
+  const el = $('#tab-taller'), inv = S.inv;
+  const used = { frG: 0, frC: 0 }; press.forEach(k => used[k]++);
+  const avG = inv.frG - used.frG, avC = inv.frC - used.frC, full = press.length >= 5;
+  el.innerHTML = `
+  <div class="card">
+    <h2>${W(vinoSVG(0), 22)} Prensa de Vino de Fresa</h2>
+    <p>Elige las 5 fresas más grandes y rojas. Mientras más carmesí, ¡más intenso y dulce sale el vino tinto!</p>
+    <div class="stock">
+      <button class="sbtn" id="addG" ${avG < 1 || full ? 'disabled' : ''}>${fresaSVG(0)}Rojas grandes<b>${avG}</b></button>
+      <button class="sbtn" id="addC" ${avC < 1 || full ? 'disabled' : ''}>${fresaSVG(1)}Carmesí<b>${avC}</b></button>
+      <div class="sbtn" style="opacity:.6;cursor:default">${fresaSVG(0)}Pequeñas<b>${inv.frP}</b><span style="font-size:.64rem">(para vender)</span></div>
+    </div>
+    <div class="slots">${[0, 1, 2, 3, 4].map(i => `<div class="slot ${press[i] ? 'full' : ''}" data-i="${i}">${press[i] ? fresaSVG(press[i] === 'frC' ? 1 : 0) : ''}</div>`).join('')}</div>
+    <div class="press" id="pressBox">${TUB}</div>
+    <div class="row center"><button class="btn big" id="doPress" ${press.length < 5 ? 'disabled' : ''}>Prensar</button><button class="btn soft" id="clearPress" ${press.length ? '' : 'disabled'}>Vaciar</button></div>
+    <div class="result" id="pressRes">${lastWine === null ? '' : vinoSVG(lastWine) + `<p style="margin:6px 0 0"><b>${lastWine ? '¡Salió un Vino Tinto Reserva Carmesí!' : '¡Salió un Vino Tinto de Fresa dulce!'}</b></p>`}</div>
+  </div>
+  <div class="card">
+    <h2>${W(ramoSVG(), 24)} Ramos Especiales</h2>
+    <p>Combina 2 rosas rojas y 2 lirios para armar un ramo hermoso.</p>
+    <div class="stock">
+      <div class="sbtn" style="cursor:default">${roseSVG()}Rosas rojas<b>${inv.rosa}</b></div>
+      <div class="sbtn" style="cursor:default">${lilySVG()}Lirios<b>${inv.lirio}</b></div>
+      <div class="sbtn" style="cursor:default">${ramoSVG()}Ramos listos<b>${inv.ramo}</b></div>
+    </div>
+    <div class="row center"><button class="btn big pink" id="doRamo" ${inv.rosa >= 2 && inv.lirio >= 2 ? '' : 'disabled'}>Armar ramo</button></div>
+    <div class="result" id="ramoRes">${lastRamo ? ramoSVG() + '<p style="margin:6px 0 0"><b>¡Qué ramo tan hermoso!</b></p>' : ''}</div>
+  </div>`;
+  const addFresa = k => { if (press.length < 5) { press.push(k); sfx('click'); lastWine = null; renderTaller(); } };
+  $('#addG').onclick = () => addFresa('frG');
+  $('#addC').onclick = () => addFresa('frC');
+  $$('.slot', el).forEach(s => s.onclick = () => { const i = +s.dataset.i; if (press[i]) { press.splice(i, 1); sfx('click'); renderTaller(); } });
+  $('#clearPress').onclick = () => { press = []; sfx('click'); renderTaller(); };
+  $('#doPress').onclick = doPress;
+  $('#doRamo').onclick = doRamo;
+}
+
+function doPress() {
+  if (press.length < 5) return;
+  const box = $('#pressBox');
+  $$('#tab-taller button').forEach(b => b.disabled = true);
+  box.classList.add('squish');
+  sfx('press'); setTimeout(() => sfx('press'), 450); setTimeout(() => sfx('press'), 900);
+  setTimeout(() => {
+    const c = press.filter(k => k === 'frC').length;
+    S.inv.frC -= c; S.inv.frG -= (5 - c);
+    const res = c >= 3;
+    if (res) S.inv.vinoR++; else S.inv.vino++;
+    press = []; lastWine = res ? 1 : 0; lastRamo = false; save();
+    sfx('harvest'); renderTaller();
+    toast(res ? '¡Vino Tinto Reserva Carmesí! Intenso, dulce y perfecto, como tú.' : '¡Vino de fresa dulce listo para llevar al mercado!');
+    heartsAt($('#pressRes'), 6);
+  }, 1450);
+}
+
+function doRamo() {
+  if (S.inv.rosa < 2 || S.inv.lirio < 2) return;
+  S.inv.rosa -= 2; S.inv.lirio -= 2; S.inv.ramo++;
+  lastRamo = true; lastWine = null; save();
+  sfx('harvest'); renderTaller();
+  toast('¡Un ramo de rosas y lirios, hecho a mano con cariño!');
+  heartsAt($('#ramoRes'), 6);
+}
+
+/* =====================================================================
+   MERCADO: vender y desbloquear decoraciones con Fresipuntos
+   ===================================================================== */
+const SELL = [
+  { k: 'vinoR', n: 'Vino Tinto Reserva Carmesí', p: 90, ic: () => vinoSVG(1), love: 1 },
+  { k: 'vino', n: 'Vino Tinto de Fresa dulce', p: 45, ic: () => vinoSVG(0), love: 1 },
+  { k: 'ramo', n: 'Ramo de rosas y lirios', p: 55, ic: () => ramoSVG(), love: 1 },
+  { k: 'frC', n: 'Fresas carmesí', p: 10, ic: () => fresaSVG(1) },
+  { k: 'frG', n: 'Fresas rojas grandes', p: 6, ic: () => fresaSVG(0) },
+  { k: 'frP', n: 'Fresas pequeñas', p: 2, ic: () => fresaSVG(0) },
+  { k: 'rosa', n: 'Rosas rojas', p: 8, ic: () => roseSVG() },
+  { k: 'lirio', n: 'Lirios', p: 8, ic: () => lilySVG() }
+];
+
+function renderMercado() {
+  const el = $('#tab-mercado'), inv = S.inv;
+  const rows = SELL.filter(s => inv[s.k] > 0).map(s => `
+    <div class="item">${W(s.ic(), 44).replace('<svg ', '<svg class="ic" ')}
+      <div class="info"><b>${s.n}</b><span>Tienes ${inv[s.k]} · <span class="price">${s.p}</span> c/u</span></div>
+      <button class="btn" data-sell="${s.k}">Vender</button>
+      ${inv[s.k] > 1 ? `<button class="btn soft" data-sell="${s.k}" data-all="1">Todo</button>` : ''}
+    </div>`).join('');
+  el.innerHTML = `
+  <div class="card">
+    <h2>${W(ICON.mercado, 26)} Mercado de Fresita</h2>
+    <p>Vende tu vino, tus ramos y tus cosechas para ganar Fresipuntos.</p>
+    ${rows || '<p style="text-align:center;margin:14px 0">Aún no tienes nada para vender. ¡Ve al huerto y al taller!</p>'}
+  </div>
+  <div class="card">
+    <h2>${W(heartSVG('#e63950'), 24)} Decora tu granja</h2>
+    <p>Desbloquea detalles con tus Fresipuntos para que tu granja sea cada vez más bonita.</p>
+    ${DECOR.map(d => `
+    <div class="item">${W(DECOR_ICON[d.id](), 54).replace('<svg ', '<svg class="ic" style="width:54px;height:44px" ')}
+      <div class="info"><b>${d.n}</b><span>${d.d}</span></div>
+      ${S.decor[d.id] ? '<span class="owned">Ya lo tienes</span>' : `<button class="btn green" data-buy="${d.id}" ${S.pts < d.p ? 'disabled' : ''}>${d.p}</button>`}
+    </div>`).join('')}
+  </div>`;
+  $$('[data-sell]', el).forEach(b => b.onclick = () => sell(b.dataset.sell, !!b.dataset.all, b));
+  $$('[data-buy]', el).forEach(b => b.onclick = () => buyDecor(b.dataset.buy));
+}
+
+function sell(k, all, btn) {
+  const it = SELL.find(s => s.k === k), n = all ? S.inv[k] : 1;
+  if (!it || S.inv[k] < n || n < 1) return;
+  S.inv[k] -= n;
+  heartsAt(btn, 5);
+  addPts(it.p * n); sfx('sell');
+  if (it.love) toast(pick(MSG.venta) + ' (+' + it.p * n + ')');
+  else toast('+' + it.p * n + ' Fresipuntos', 1800);
+  renderMercado();
+}
+
+function buyDecor(id) {
+  const d = DECOR.find(x => x.id === id);
+  if (!d || S.decor[id] || S.pts < d.p) return;
+  S.pts -= d.p; S.decor[id] = 1; updateHud(); save();
+  sfx('unlock'); renderScene(); renderMercado();
+  toast('¡Nuevo en tu granja: ' + d.n + '!');
+  hearts(innerWidth / 2, innerHeight / 3, 8);
+}
+
+/* =====================================================================
+   DESCANSO: té de manzanilla, cobijita y mimitos
+   ===================================================================== */
+function restSceneSVG() {
+  const stars = [[255, 38], [318, 30], [335, 70], [270, 80]].map(([x, y]) => `<circle class="tw" cx="${x}" cy="${y}" r="2.2" fill="#fff3c4"/>`).join('');
+  const blanketHearts = [[215, 150], [255, 158], [295, 148], [235, 172], [275, 176]].map(([x, y]) => `<g transform="translate(${x - 7} ${y - 7}) scale(.24)">${heartInner('#ffb7c9')}</g>`).join('');
+  return svg('0 0 410 240', `
+  <rect x="0" y="206" width="410" height="34" fill="#4a1a3a"/>
+  <rect x="236" y="14" width="118" height="84" rx="12" fill="#1f0b24" stroke="#f3d58a" stroke-width="4"/>
+  <circle cx="276" cy="52" r="17" fill="#fff3c4"/><circle cx="283" cy="47" r="14" fill="#1f0b24"/>${stars}
+  <rect x="8" y="98" width="22" height="112" rx="10" fill="#6d0f2a"/>
+  <rect x="14" y="150" width="318" height="58" rx="12" fill="#8f1230"/>
+  <rect x="26" y="140" width="300" height="28" rx="14" fill="#ffd9e2"/>
+  <rect x="38" y="116" width="86" height="36" rx="17" fill="#fff"/>
+  <g transform="translate(150 130) rotate(-80) translate(-60 -76) scale(.86)">${fresitaInner('closed')}</g>
+  <path d="M186 138 C216 124 296 124 330 140 L330 182 C300 190 220 190 186 182Z" fill="#e63950"/>
+  <path d="M186 138 C216 124 296 124 330 140" fill="none" stroke="#ff8a9b" stroke-width="4" stroke-linecap="round"/>
+  ${blanketHearts}
+  <rect x="340" y="132" width="62" height="8" rx="4" fill="#8f1230"/><rect x="360" y="140" width="22" height="68" fill="#6d0f2a"/>
+  <path d="M349 108 H385 V120 C385 130 349 130 349 120Z" fill="#fff"/><path d="M385 111 C397 109 397 123 385 121" fill="none" stroke="#fff" stroke-width="4"/>
+  <ellipse cx="367" cy="108" rx="18" ry="4" fill="#e8b84a"/>
+  <path class="steam" d="M360 100 q-5 -8 0 -15" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path class="steam" style="animation-delay:.8s" d="M372 100 q-5 -8 0 -15" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <text class="zz" x="98" y="104" font-size="24">z</text><text class="zz" style="animation-delay:1s" x="116" y="86" font-size="30">Z</text><text class="zz" style="animation-delay:2s" x="138" y="64" font-size="22">z</text>`);
+}
+
+let restTimers = [];
+function renderDescanso() {
+  $('#tab-descanso').innerHTML = `
+  <div class="card" style="text-align:center">
+    <h2 style="justify-content:center">${W(ICON.descanso, 28)} Rincón del Descanso</h2>
+    <div style="width:78%;max-width:300px;margin:6px auto;background:linear-gradient(#3a1530,#7a2a4d);border-radius:22px;padding:8px">${restSceneSVG()}</div>
+    <p>Cuando estés cansadita, con dolorcito o solo quieras un momento de calma, Fresita se acuesta contigo con una cobijita y un té de manzanilla.</p>
+    <button class="btn big pink" id="btnRest" style="width:100%">Descansar con té de manzanilla y cobijita</button>
+  </div>
+  <div class="card" style="text-align:center">
+    <h2 style="justify-content:center">${W(heartSVG('#e63950'), 24)} Mimitos rápidos</h2>
+    <p>Toca el botón cuando necesites un abrazo en forma de mensaje.</p>
+    <button class="btn" id="btnMimo">Quiero un mimito</button>
+  </div>`;
+  $('#btnRest').onclick = startRest;
+  $('#btnMimo').onclick = e => {
+    sfx('gold'); heartsAt(e.currentTarget, 8);
+    toast(pick([...MSG.cosecha, ...MSG.descanso, ...MSG.venta]), 4200);
+  };
+}
+
+function startRest() {
+  stopMusic();
+  const r = $('#rest'); r.classList.add('active');
+  $('#restScene').innerHTML = restSceneSVG();
+  let i = Math.floor(Math.random() * MSG.descanso.length);
+  const setMsg = () => { $('#restMsg').textContent = MSG.descanso[i % MSG.descanso.length]; i++; };
+  setMsg(); sfx('rest');
+  restTimers.push(setInterval(setMsg, 9000));
+  restTimers.push(setInterval(() => sfx('rest'), 9000));
+  restTimers.push(setInterval(() => hearts(innerWidth / 2 + rnd(-90, 90), innerHeight * .55, 1), 1300));
+}
+function endRest() {
+  restTimers.forEach(clearInterval); restTimers = [];
+  $('#rest').classList.remove('active');
+  if (S.music) startMusic();
+  if (Date.now() - S.lastRest > 90000) {
+    S.lastRest = Date.now(); addPts(5);
+    toast('Descansar también suma: +5 Fresipuntos para ti. Te amo.', 4200);
+  } else toast('Qué bueno que descansaste, mi amor.', 2800);
+  save();
+}
+
+/* =====================================================================
+   MINIJUEGO: Lluvia de Fresas con Fresita
+   ===================================================================== */
+const MG = { on: false, items: [], floaters: [], score: 0, lives: 3, px: 0, tx: 0, last: 0, spawn: 0, t: 0,
+             shake: 0, flash: 0, raf: 0, keys: {}, w: 0, h: 0, dpr: 1 };
+const IMG = {};
+const MG_TYPES = [
+  { k: 'frG', w: 45, pts: 10, ar: 70 / 60 },
+  { k: 'frC', w: 15, pts: 20, ar: 70 / 60 },
+  { k: 'rosa', w: 7, pts: 30, ar: 1 },
+  { k: 'heart', w: 6, pts: 10, life: 1, ar: 1 },
+  { k: 'drop', w: 15, bad: 1, ar: 1 },
+  { k: 'thorn', w: 12, bad: 1, ar: 1 }
+];
+let ctx = null;
+
+function loadImgs() {
+  if (IMG.ready) return;
+  const mk = (s, w, h) => {
+    const i = new Image();
+    i.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(s.replace('<svg ', `<svg width="${w}" height="${h}" `));
+    return i;
+  };
+  IMG.frG = mk(fresaSVG(0), 120, 140); IMG.frC = mk(fresaSVG(1), 120, 140);
+  IMG.rosa = mk(roseSVG(), 120, 120); IMG.heart = mk(heartSVG('#ff5c7a'), 120, 120);
+  IMG.drop = mk(dropSVG(), 120, 120); IMG.thorn = mk(thornSVG(), 120, 120);
+  IMG.kit = mk(fresitaSVG('open'), 240, 304);
+  IMG.ready = true;
+}
+const rr = (c, x, y, w, h, r) => { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); };
+
+function mgResize() {
+  const cv = $('#mgCanvas');
+  MG.dpr = Math.min(2, window.devicePixelRatio || 1);
+  MG.w = cv.clientWidth; MG.h = cv.clientHeight;
+  cv.width = Math.round(MG.w * MG.dpr); cv.height = Math.round(MG.h * MG.dpr);
+  ctx = cv.getContext('2d');
+  ctx.setTransform(MG.dpr, 0, 0, MG.dpr, 0, 0);
+  MG.px = MG.tx = MG.w / 2;
+}
+function mgHud() {
+  $('#mgScore').textContent = MG.score;
+  $('#mgLives').innerHTML = [0, 1, 2].map(i => `<span class="lv ${i < MG.lives ? '' : 'lost'}">♥</span>`).join('');
+}
+
+function startMini() {
+  loadImgs();
+  $('#mgOver').classList.remove('active');
+  $('#mini').classList.add('active');
+  mgResize();
+  Object.assign(MG, { on: true, items: [], floaters: [], score: 0, lives: 3, spawn: .6, t: 0, shake: 0, flash: 0, last: performance.now() });
+  mgHud();
+  const hint = $('#mgHint'); hint.style.opacity = .85;
+  setTimeout(() => { hint.style.opacity = 0; }, 4500);
+  cancelAnimationFrame(MG.raf);
+  MG.raf = requestAnimationFrame(mgFrame);
+}
+
+function spawnItem() {
+  let r = Math.random() * MG_TYPES.reduce((a, t) => a + t.w, 0), ty = MG_TYPES[0];
+  for (const t of MG_TYPES) { if ((r -= t.w) <= 0) { ty = t; break; } }
+  const s = Math.max(38, Math.min(60, MG.w * .11));
+  MG.items.push({
+    ty, s, ar: ty.ar, img: ty.k, x: rnd(s / 2 + 4, MG.w - s / 2 - 4), y: -s,
+    v: MG.h * (.30 + Math.min(.5, MG.score / 900)) * rnd(.9, 1.15), ph: rnd(0, 6.28)
+  });
+}
+
+function mgCatch(it) {
+  const ty = it.ty;
+  if (ty.bad) {
+    MG.lives--; MG.shake = .4; MG.flash = .6; sfx('bad');
+    MG.floaters.push({ x: it.x, y: it.y, txt: ty.k === 'drop' ? '¡Gota!' : '¡Espina!', c: '#b3122f', life: 1 });
+    mgHud();
+    if (MG.lives <= 0) mgFinish(true);
+    return;
+  }
+  MG.score += ty.pts;
+  let txt = '+' + ty.pts;
+  if (ty.life && MG.lives < 3) { MG.lives++; txt = '+1 vida'; }
+  sfx(ty.k === 'frG' ? 'catch' : 'gold');
+  MG.floaters.push({ x: it.x, y: it.y, txt, c: ty.k === 'frC' ? '#b3122f' : '#e63950', life: 1 });
+  mgHud();
+}
+
+function mgFrame(t) {
+  if (!MG.on) return;
+  const dt = Math.min(.05, (t - MG.last) / 1000 || 0); MG.last = t; MG.t += dt;
+  const w = MG.w, h = MG.h, bw = Math.min(150, w * .3), bh = bw * .36;
+  const k = MG.keys;
+  if (k.ArrowLeft || k.a || k.A) MG.tx -= w * 1.1 * dt;
+  if (k.ArrowRight || k.d || k.D) MG.tx += w * 1.1 * dt;
+  MG.tx = Math.max(bw / 2, Math.min(w - bw / 2, MG.tx));
+  MG.px += (MG.tx - MG.px) * Math.min(1, dt * 14);
+
+  MG.spawn -= dt;
+  if (MG.spawn <= 0) { spawnItem(); MG.spawn = Math.max(.38, .95 - MG.score / 700) * rnd(.8, 1.15); }
+
+  const rimY = h - 10 - bh;
+  for (let i = MG.items.length - 1; i >= 0; i--) {
+    const it = MG.items[i];
+    it.y += it.v * dt;
+    const hs = it.s * it.ar / 2;
+    if (it.y + hs * .6 >= rimY && it.y < rimY + bh * .8 && Math.abs(it.x - MG.px) < bw * .52) {
+      MG.items.splice(i, 1); mgCatch(it);
+      if (!MG.on) return;
+    } else if (it.y - hs > h) MG.items.splice(i, 1);
+  }
+
+  /* dibujo */
+  ctx.setTransform(MG.dpr, 0, 0, MG.dpr, 0, 0);
+  ctx.clearRect(0, 0, w, h);
+  ctx.save();
+  if (MG.shake > 0) { ctx.translate(rnd(-5, 5) * MG.shake * 2, rnd(-3, 3) * MG.shake * 2); MG.shake -= dt; }
+  ctx.fillStyle = 'rgba(255,255,255,.85)';
+  for (let i = 0; i < 3; i++) {
+    const cx = ((MG.t * 12 + i * w / 3) % (w + 140)) - 70, cy = 70 + i * 55;
+    ctx.beginPath(); ctx.arc(cx, cy, 20, 0, 7); ctx.arc(cx + 22, cy + 4, 16, 0, 7); ctx.arc(cx - 22, cy + 6, 14, 0, 7); ctx.fill();
+  }
+  ctx.fillStyle = '#bfe3a9';
+  ctx.beginPath(); ctx.moveTo(0, h); ctx.lineTo(0, h - 70); ctx.quadraticCurveTo(w * .25, h - 115, w * .5, h - 80);
+  ctx.quadraticCurveTo(w * .75, h - 50, w, h - 88); ctx.lineTo(w, h); ctx.fill();
+  ctx.fillStyle = '#a7d99b'; ctx.fillRect(0, h - 26, w, 26);
+
+  const fw = bw * .84, fh = fw * 152 / 120;
+  if (IMG.kit.complete) ctx.drawImage(IMG.kit, MG.px - fw / 2, h - 12 - fh, fw, fh);
+  for (const it of MG.items) {
+    const im = IMG[it.img]; if (!im.complete) continue;
+    ctx.save(); ctx.translate(it.x, it.y); ctx.rotate(Math.sin(MG.t * 3 + it.ph) * .22);
+    ctx.drawImage(im, -it.s / 2, -it.s * it.ar / 2, it.s, it.s * it.ar); ctx.restore();
+  }
+  /* cesta (delante de Fresita) */
+  const bx = MG.px, by = rimY;
+  ctx.fillStyle = '#e0a766';
+  ctx.beginPath(); ctx.moveTo(bx - bw / 2, by); ctx.lineTo(bx + bw / 2, by); ctx.lineTo(bx + bw * .4, by + bh);
+  ctx.quadraticCurveTo(bx, by + bh * 1.15, bx - bw * .4, by + bh); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = '#b97f3f'; ctx.lineWidth = 2;
+  for (let i = 1; i <= 2; i++) { ctx.beginPath(); ctx.moveTo(bx - bw * .47 + i * 3, by + bh * i / 3); ctx.lineTo(bx + bw * .47 - i * 3, by + bh * i / 3); ctx.stroke(); }
+  for (let i = -3; i <= 3; i++) { ctx.beginPath(); ctx.moveTo(bx + i * bw / 7, by); ctx.lineTo(bx + i * bw / 8.5, by + bh); ctx.stroke(); }
+  ctx.fillStyle = '#c98c4a'; rr(ctx, bx - bw / 2 - 4, by - 5, bw + 8, 11, 5); ctx.fill();
+  ctx.fillStyle = '#e63950';
+  ctx.beginPath(); ctx.ellipse(bx - 9, by + bh * .55, 9, 6, -.3, 0, 7); ctx.ellipse(bx + 9, by + bh * .55, 9, 6, .3, 0, 7); ctx.fill();
+  ctx.fillStyle = '#b3122f'; ctx.beginPath(); ctx.arc(bx, by + bh * .55, 4, 0, 7); ctx.fill();
+
+  /* textos flotantes */
+  ctx.font = '800 20px "Baloo 2", Quicksand, sans-serif'; ctx.textAlign = 'center';
+  for (let i = MG.floaters.length - 1; i >= 0; i--) {
+    const f = MG.floaters[i]; f.life -= dt * 1.1; f.y -= 50 * dt;
+    if (f.life <= 0) { MG.floaters.splice(i, 1); continue; }
+    ctx.globalAlpha = Math.min(1, f.life * 1.5); ctx.lineWidth = 4; ctx.strokeStyle = '#fff'; ctx.strokeText(f.txt, f.x, f.y);
+    ctx.fillStyle = f.c; ctx.fillText(f.txt, f.x, f.y); ctx.globalAlpha = 1;
+  }
+  ctx.restore();
+  if (MG.flash > 0) { ctx.fillStyle = `rgba(255,60,90,${MG.flash * .35})`; ctx.fillRect(0, 0, w, h); MG.flash -= dt * 1.5; }
+  MG.raf = requestAnimationFrame(mgFrame);
+}
+
+function mgFinish(showModal) {
+  MG.on = false; cancelAnimationFrame(MG.raf);
+  let conv = Math.floor(MG.score / 2);
+  if (MG.score > 0 && conv < 1) conv = 1;
+  if (conv > 0) addPts(conv);
+  if (showModal) {
+    $('#mgFinal').textContent = MG.score + ' puntos';
+    $('#mgConv').textContent = conv > 0 ? `Se convirtieron en ${conv} Fresipuntos para tu granja.` : 'Esta vez no sumaste puntos, ¡pero tu granja te espera con cariño!';
+    $('#mgLove').textContent = pick(MSG.juego);
+    $('#mgOver').classList.add('active');
+    sfx('harvest'); hearts(innerWidth / 2, innerHeight / 2, 8);
+  }
+  renderMercado();
+}
+function mgLeave() {
+  if (MG.on) mgFinish(false);
+  $('#mgOver').classList.remove('active');
+  $('#mini').classList.remove('active');
+}
+
+/* =====================================================================
+   ARRANQUE
+   ===================================================================== */
+function init() {
+  $('#welChar').innerHTML = fresitaSVG('open');
+  for (let i = 0; i < 14; i++) {
+    const p = document.createElement('div');
+    p.className = 'petal';
+    p.innerHTML = heartSVG(pick(['#ff8fab', '#ffb7c9', '#e63950']));
+    p.style.left = rnd(0, 94) + '%'; p.style.width = rnd(14, 26) + 'px';
+    p.style.animationDuration = rnd(7, 14) + 's'; p.style.animationDelay = (-rnd(0, 12)) + 's';
+    $('#welcome').appendChild(p);
+  }
+  $('#ptsIcon').innerHTML = W(fresaSVG(1), 32);
+  $('#btnMusic').innerHTML = W(ICON.note, 26);
+  $('#btnSound').innerHTML = W(ICON.sound, 26);
+  $('#mgExit').innerHTML = W(ICON.back, 24);
+  const names = { huerto: 'Huerto', taller: 'Taller', mercado: 'Mercado', descanso: 'Descanso' };
+  $$('.nbtn').forEach(b => {
+    b.innerHTML = ICON[b.dataset.tab] + `<span>${names[b.dataset.tab]}</span>`;
+    b.onclick = () => { sfx('click'); tab(b.dataset.tab); };
+  });
+  updateHud(); updateAudioBtns(); buildHuerto(); tick();
+
+  $('#btnStart').onclick = () => {
+    ac(); sfx('unlock'); show('game'); startMusic();
+    toast('Bienvenida a tu granja, mi amor. Aquí todo florece contigo.', 4200);
+  };
+  $('#btnMusic').onclick = () => {
+    S.music = !S.music; save(); updateAudioBtns();
+    if (S.music) { ac(); startMusic(); sfx('click'); } else stopMusic();
+  };
+  $('#btnSound').onclick = () => {
+    S.sound = !S.sound; save(); updateAudioBtns(); if (S.sound) sfx('click');
+  };
+  $('#btnRestEnd').onclick = endRest;
+  $('#mgExit').onclick = () => { sfx('click'); mgLeave(); };
+  $('#mgAgain').onclick = () => { sfx('click'); startMini(); };
+  $('#mgBack').onclick = () => { sfx('click'); mgLeave(); };
+
+  const cv = $('#mgCanvas');
+  const move = e => { const r = cv.getBoundingClientRect(); MG.tx = e.clientX - r.left; };
+  cv.addEventListener('pointerdown', e => { move(e); try { cv.setPointerCapture(e.pointerId); } catch (x) { /* ok */ } });
+  cv.addEventListener('pointermove', move);
+  window.addEventListener('keydown', e => { MG.keys[e.key] = true; if (MG.on && e.key.startsWith('Arrow')) e.preventDefault(); });
+  window.addEventListener('keyup', e => { MG.keys[e.key] = false; });
+  window.addEventListener('resize', () => { if ($('#mini').classList.contains('active')) { const w0 = MG.w; mgResize(); MG.items.forEach(it => { it.x = Math.min(it.x * MG.w / (w0 || MG.w), MG.w - it.s / 2); }); } });
+  document.addEventListener('pointerdown', () => ac(), { once: true });
+  setInterval(tick, 500);
+}
+init();
+</script>
+</body>
+</html>
